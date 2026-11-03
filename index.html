@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>השמות לתינוקת של רעות ונתנאל 🎀</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #fff0f5; /* Lavender Blush - ורוד תינוקות */
+            margin: 0;
+            padding: 20px;
+            color: #5d4037;
+            text-align: center;
+        }
+
+        h1 {
+            color: #d81b60;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            font-size: 1.2em;
+            color: #880e4f;
+            margin-bottom: 30px;
+        }
+
+        /* Creator View Styles */
+        #creator-view {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(216, 27, 96, 0.1);
+            display: none;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            font-family: 'Heebo', sans-serif;
+            border: 2px solid #f8bbd0;
+            border-radius: 10px;
+            box-sizing: border-box;
+            resize: none;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #ff4081;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-family: 'Heebo', sans-serif;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 4px 10px rgba(255, 64, 129, 0.3);
+        }
+
+        button:hover {
+            background-color: #e91e63;
+            transform: scale(1.05);
+        }
+
+        #link-output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fce4ec;
+            border-radius: 10px;
+            word-break: break-all;
+            display: none;
+            font-size: 0.9em;
+            color: #c2185b;
+            border: 1px dashed #d81b60;
+        }
+
+        /* Viewer Styles */
+        #viewer-view {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background-color: transparent;
+            width: 120px;
+            height: 120px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 6px 15px rgba(233, 30, 99, 0.15);
+        }
+
+        .card-front {
+            background-color: white;
+            font-size: 3em;
+            border: 4px solid #f8bbd0;
+        }
+
+        .card-front:hover {
+            border-color: #f06292;
+            transform: scale(1.05);
+            transition: 0.3s;
+        }
+
+        .card-back {
+            background-color: #ff4081;
+            color: white;
+            font-size: 1.4em;
+            font-weight: bold;
+            transform: rotateY(180deg);
+            border: 4px solid #c2185b;
+            padding: 10px;
+            box-sizing: border-box;
+            word-break: break-word;
+        }
+
+        #reset-btn {
+            background-color: #00bcd4; /* Contrast button for reset */
+            box-shadow: 0 4px 10px rgba(0, 188, 212, 0.3);
+            margin-bottom: 30px;
+        }
+
+        #reset-btn:hover {
+            background-color: #00acc1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Creator View (For you) -->
+    <div id="creator-view">
+        <h1>הכנת הרשימה 🎀</h1>
+        <p>הכנס את השמות שתרצה להציע (מופרדים בפסיק או שורה חדשה):</p>
+        <textarea id="names-input" placeholder="לדוגמה: אריאל, מיה, נועה, Abigail"></textarea>
+        <button onclick="generateLink()">צור קישור להורים</button>
+        <div id="link-output"></div>
+    </div>
+
+    <!-- Viewer View (For Reut & Netanel) -->
+    <div id="viewer-view">
+        <h1>רעות ונתנאל! 🌸</h1>
+        <p class="subtitle">לחצו על האייקונים כדי לגלות אילו שמות בחרנו לתינוקת החדשה</p>
+        <button id="reset-btn" onclick="resetAndShuffle()"> ערבב והסתר הכל מחדש 🔄</button>
+        <div class="cards-container" id="cards-container"></div>
+    </div>
+
+    <script>
+        // Icons pool for the baby theme
+        const icons = ['👶', '🍼', '🧸', '🚼', '🎀', '🌸'];
+
+        // Safe Base64 encoding for Hebrew
+        function utf8_to_b64(str) {
+            return window.btoa(unescape(encodeURIComponent(str)));
+        }
+
+        function b64_to_utf8(str) {
+            return decodeURIComponent(escape(window.atob(str)));
+        }
+
+        // Initialize App based on URL
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const data = urlParams.get('d');
+
+            if (data) {
+                // We are in Viewer Mode
+                document.getElementById('viewer-view').style.display = 'block';
+                try {
+                    const decodedStr = b64_to_utf8(data);
+                    const names = JSON.parse(decodedStr);
+                    renderCards(names);
+                } catch (e) {
+                    alert('הקישור פגום או לא תקין.');
+                }
+            } else {
+                // We are in Creator Mode
+                document.getElementById('creator-view').style.display = 'block';
+            }
+        };
+
+        // --- Creator Functions ---
+        function generateLink() {
+            const inputText = document.getElementById('names-input').value;
+            // Split by comma or newline, trim spaces, remove empty
+            const namesArray = inputText.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
+            
+            if (namesArray.length === 0) {
+                alert('אנא הכנס לפחות שם אחד!');
+                return;
+            }
+
+            const encodedData = utf8_to_b64(JSON.stringify(namesArray));
+            const shareableLink = window.location.origin + window.location.pathname + '?d=' + encodedData;
+            
+            const linkDiv = document.getElementById('link-output');
+            linkDiv.style.display = 'block';
+            linkDiv.innerHTML = `
+                <strong>הקישור נוצר בהצלחה!</strong><br><br>
+                <a href="${shareableLink}" target="_blank">${shareableLink}</a><br><br>
+                <button onclick="navigator.clipboard.writeText('${shareableLink}'); alert('הקישור הועתק!')" style="font-size:14px; padding:8px 15px; margin-top:10px;">העתק קישור</button>
+            `;
+        }
+
+        // --- Viewer Functions ---
+        let currentNames = [];
+
+        function renderCards(names) {
+            currentNames = names;
+            const container = document.getElementById('cards-container');
+            container.innerHTML = ''; // Clear
+
+            // Shuffle names initially
+            const shuffledNames = [...names].sort(() => Math.random() - 0.5);
+
+            shuffledNames.forEach(name => {
+                // Pick a random icon
+                const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                
+                // Create card elements
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => card.classList.add('flipped');
+
+                const cardInner = document.createElement('div');
+                cardInner.className = 'card-inner';
+
+                const cardFront = document.createElement('div');
+                cardFront.className = 'card-front';
+                cardFront.innerText = randomIcon;
+
+                const cardBack = document.createElement('div');
+                cardBack.className = 'card-back';
+                cardBack.innerText = name;
+
+                cardInner.appendChild(cardFront);
+                cardInner.appendChild(cardBack);
+                card.appendChild(cardInner);
+                container.appendChild(card);
+            });
+        }
+
+        function resetAndShuffle() {
+            const cards = document.querySelectorAll('.card');
+            
+            // Flip all back
+            cards.forEach(card => card.classList.remove('flipped'));
+
+            // Wait for flip animation to finish (600ms) before re-shuffling the DOM elements
+            setTimeout(() => {
+                renderCards(currentNames);
+            }, 600);
+        }
+    </script>
+</body>
+</html>
